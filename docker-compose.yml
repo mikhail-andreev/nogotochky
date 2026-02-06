@@ -1,0 +1,18 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: host
+    volumes:
+      - ./apps/cabinet:/app
+      - sqlite-data:/app/data
+    env_file:
+      - .env
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py create_test_users &&
+             python manage.py runserver 0.0.0.0:8000"
+
+volumes:
+  sqlite-data:

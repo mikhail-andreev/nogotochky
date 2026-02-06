@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Записи{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Записи клиентов</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Статус</label>
+                <select name="status" class="form-select">
+                    <option value="">Все</option>
+                    <option value="CREATED" {% if request.GET.status == 'CREATED' %}selected{% endif %}>Активные</option>
+                    <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Отменённые</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary">Фильтровать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if bookings %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Дата и время</th>
+                <th>Клиент</th>
+                <th>Услуга</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.slot.start_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    <strong>{{ booking.client_name }}</strong>
+                    <br><small class="text-muted">{{ booking.client_phone }}</small>
+                </td>
+                <td>{{ booking.service.name }}</td>
+                <td>
+                    {% if booking.status == 'CREATED' %}
+                    <span class="badge bg-success">Активна</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Отменена</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'booking_detail' booking.pk %}" class="btn btn-sm btn-outline-info">Подробнее</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Нет записей для отображения.
+</div>
+{% endif %}
+{% endblock %}

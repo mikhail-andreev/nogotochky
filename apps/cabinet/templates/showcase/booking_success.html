@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Запись подтверждена{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <span class="display-1 text-success">&#10003;</span>
+                </div>
+                <h2 class="mb-4">Запись подтверждена!</h2>
+
+                {% if booking %}
+                <div class="text-start mb-4">
+                    <dl class="row">
+                        <dt class="col-sm-4">Мастер:</dt>
+                        <dd class="col-sm-8">{{ profile.display_name }}</dd>
+
+                        <dt class="col-sm-4">Услуга:</dt>
+                        <dd class="col-sm-8">{{ booking.service.name }}</dd>
+
+                        <dt class="col-sm-4">Дата:</dt>
+                        <dd class="col-sm-8">{{ booking.slot.start_at|date:"d.m.Y" }}</dd>
+
+                        <dt class="col-sm-4">Время:</dt>
+                        <dd class="col-sm-8">{{ booking.slot.start_at|time:"H:i" }}</dd>
+
+                        <dt class="col-sm-4">Цена:</dt>
+                        <dd class="col-sm-8">{{ booking.service.price }} руб.</dd>
+                    </dl>
+                </div>
+                {% endif %}
+
+                <p class="text-muted mb-4">
+                    Мастер свяжется с вами для подтверждения записи.
+                </p>
+
+                <a href="{% url 'master_page' profile.slug %}" class="btn btn-primary">
+                    Вернуться на страницу мастера
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

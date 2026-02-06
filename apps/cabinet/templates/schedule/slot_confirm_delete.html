@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление слота{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Удаление слота</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p>Вы уверены, что хотите удалить слот <strong>{{ object.start_at|date:"d.m.Y H:i" }} — {{ object.end_at|time:"H:i" }}</strong>?</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+                <a href="{% url 'slot_list' %}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

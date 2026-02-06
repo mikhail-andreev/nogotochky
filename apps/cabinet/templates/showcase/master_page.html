@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.display_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <span class="text-white fs-1">{{ profile.display_name|first|upper }}</span>
+                    </div>
+                </div>
+                <h4>{{ profile.display_name }}</h4>
+                {% if profile.phone %}
+                <p class="text-muted">
+                    <a href="tel:{{ profile.phone }}">{{ profile.phone }}</a>
+                </p>
+                {% endif %}
+                {% if profile.bio %}
+                <p>{{ profile.bio|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if salon %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">{{ salon.name }}</h5>
+            </div>
+            <div class="card-body">
+                {% if salon.address %}
+                <p><strong>Адрес:</strong> {{ salon.address }}</p>
+                {% endif %}
+                {% if salon.phone %}
+                <p><strong>Телефон:</strong> <a href="tel:{{ salon.phone }}">{{ salon.phone }}</a></p>
+                {% endif %}
+                {% if salon.description %}
+                <p>{{ salon.description|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-8">
+        <h3 class="mb-4">Услуги</h3>
+
+        {% if services %}
+        <div class="row">
+            {% for service in services %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ service.name }}</h5>
+                        {% if service.description %}
+                        <p class="card-text text-muted">{{ service.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        <p class="mb-2">
+                            <span class="badge bg-light text-dark">{{ service.duration_min }} мин</span>
+                            <span class="badge bg-primary">{{ service.price }} руб.</span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'master_slots' profile.slug %}?service={{ service.pk }}" class="btn btn-primary btn-sm w-100">
+                            Записаться
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            Услуги пока не добавлены.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

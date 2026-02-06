@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой салон{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Мой салон</h2>
+    <a href="{% url 'salon_edit' %}" class="btn btn-primary">
+        {% if salon %}Редактировать{% else %}Создать{% endif %}
+    </a>
+</div>
+
+{% if salon %}
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Название</dt>
+            <dd class="col-sm-9">{{ salon.name }}</dd>
+
+            <dt class="col-sm-3">Адрес</dt>
+            <dd class="col-sm-9">{{ salon.address|default:'—' }}</dd>
+
+            <dt class="col-sm-3">Телефон</dt>
+            <dd class="col-sm-9">{{ salon.phone|default:'—' }}</dd>
+
+            <dt class="col-sm-3">Описание</dt>
+            <dd class="col-sm-9">{{ salon.description|default:'—'|linebreaks }}</dd>
+        </dl>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    У вас пока нет салона. <a href="{% url 'salon_edit' %}">Создайте его</a>, чтобы начать принимать записи.
+</div>
+{% endif %}
+{% endblock %}

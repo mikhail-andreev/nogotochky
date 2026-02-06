@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Мастер-портал — Онлайн-запись к мастерам{% endblock %}
+
+{% block content %}
+<div class="py-5 text-center">
+    <h1 class="display-4 mb-4">Онлайн-запись к мастерам</h1>
+    <p class="lead text-muted mb-5">
+        Платформа для мастеров красоты, частных специалистов и клиник.<br>
+        Принимайте записи онлайн — без звонков и мессенджеров.
+    </p>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">Перейти в кабинет</a>
+    {% else %}
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">Стать мастером</a>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Войти</a>
+    {% endif %}
+</div>
+
+<hr class="my-5">
+
+<div class="row text-center">
+    <div class="col-md-4 mb-4">
+        <div class="p-4">
+            <div class="display-6 mb-3">1</div>
+            <h5>Создайте профиль</h5>
+            <p class="text-muted">Зарегистрируйтесь, заполните информацию о себе и вашем салоне</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="p-4">
+            <div class="display-6 mb-3">2</div>
+            <h5>Добавьте услуги</h5>
+            <p class="text-muted">Укажите услуги, цены и настройте расписание доступности</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="p-4">
+            <div class="display-6 mb-3">3</div>
+            <h5>Принимайте записи</h5>
+            <p class="text-muted">Клиенты записываются онлайн, вы видите все записи в кабинете</p>
+        </div>
+    </div>
+</div>
+
+<hr class="my-5">
+
+<div class="text-center py-4">
+    <h4 class="mb-4">Для мастеров</h4>
+    <ul class="list-unstyled text-muted">
+        <li class="mb-2">Персональная страница с вашими услугами</li>
+        <li class="mb-2">Гибкое управление расписанием</li>
+        <li class="mb-2">Контакты клиентов в одном месте</li>
+        <li class="mb-2">Бесплатно на этапе MVP</li>
+    </ul>
+</div>
+{% endblock %}

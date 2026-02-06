@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Расписание{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Расписание</h2>
+    <a href="{% url 'slot_create' %}" class="btn btn-primary">Добавить слоты</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">С даты</label>
+                <input type="date" name="from" class="form-control" value="{{ request.GET.from }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">По дату</label>
+                <input type="date" name="to" class="form-control" value="{{ request.GET.to }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary">Фильтровать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if slots %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Время</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for slot in slots %}
+            <tr>
+                <td>{{ slot.start_at|date:"d.m.Y" }}</td>
+                <td>{{ slot.start_at|time:"H:i" }} — {{ slot.end_at|time:"H:i" }}</td>
+                <td>
+                    {% if slot.status == 'AVAILABLE' %}
+                    <span class="badge bg-success">Свободен</span>
+                    {% elif slot.status == 'BOOKED' %}
+                    <span class="badge bg-primary">Занят</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Заблокирован</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if slot.status == 'AVAILABLE' %}
+                    <a href="{% url 'slot_delete' slot.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                    {% elif slot.status == 'BOOKED' %}
+                    <a href="{% url 'booking_detail' slot.booking.pk %}" class="btn btn-sm btn-outline-info">Запись</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Нет слотов для отображения. <a href="{% url 'slot_create' %}">Создайте расписание</a>.
+</div>
+{% endif %}
+{% endblock %}

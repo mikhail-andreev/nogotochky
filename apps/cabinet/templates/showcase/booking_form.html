@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Запись — {{ profile.display_name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'master_page' profile.slug %}">{{ profile.display_name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'master_slots' profile.slug %}?service={{ service.pk }}">Выбор времени</a></li>
+        <li class="breadcrumb-item active">Оформление записи</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ваша запись</h5>
+            </div>
+            <div class="card-body">
+                {% if service %}
+                <p><strong>Услуга:</strong> {{ service.name }}</p>
+                <p><strong>Длительность:</strong> {{ service.duration_min }} мин</p>
+                <p><strong>Цена:</strong> {{ service.price }} руб.</p>
+                {% endif %}
+
+                {% if slot %}
+                <hr>
+                <p><strong>Дата:</strong> {{ slot.start_at|date:"d.m.Y" }}</p>
+                <p class="mb-0"><strong>Время:</strong> {{ slot.start_at|time:"H:i" }} — {{ slot.end_at|time:"H:i" }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Контактные данные</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {{ form.service_id }}
+                    {{ form.slot_id }}
+
+                    <div class="mb-3">
+                        <label for="id_client_name" class="form-label">Ваше имя *</label>
+                        {{ form.client_name }}
+                        {% if form.client_name.errors %}
+                        <div class="text-danger small">{{ form.client_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_client_phone" class="form-label">Телефон *</label>
+                        {{ form.client_phone }}
+                        {% if form.client_phone.errors %}
+                        <div class="text-danger small">{{ form.client_phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_notes" class="form-label">Комментарий</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Записаться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
