@@ -5,6 +5,7 @@
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-4">
     <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'masters_catalog' %}">Мастера</a></li>
         <li class="breadcrumb-item"><a href="{% url 'master_page' profile.slug %}">{{ profile.display_name }}</a></li>
         <li class="breadcrumb-item active">Выбор времени</li>
     </ol>
@@ -23,27 +24,6 @@
 {% endif %}
 
 <h3 class="mb-4">Доступное время</h3>
-
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            {% if service %}
-            <input type="hidden" name="service" value="{{ service.pk }}">
-            {% endif %}
-            <div class="col-md-4">
-                <label class="form-label">С даты</label>
-                <input type="date" name="from" class="form-control" value="{{ request.GET.from }}">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">По дату</label>
-                <input type="date" name="to" class="form-control" value="{{ request.GET.to }}">
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-outline-primary">Показать</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {% if slots %}
 {% regroup slots by start_at.date as slots_by_date %}
@@ -67,7 +47,7 @@
 {% endfor %}
 {% else %}
 <div class="alert alert-info">
-    Нет доступных слотов в выбранный период.
+    Нет доступного времени в ближайшие две недели.
 </div>
 {% endif %}
 

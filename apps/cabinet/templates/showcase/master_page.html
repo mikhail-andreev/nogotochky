@@ -3,6 +3,13 @@
 {% block title %}{{ profile.display_name }}{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'masters_catalog' %}">Мастера</a></li>
+        <li class="breadcrumb-item active">{{ profile.display_name }}</li>
+    </ol>
+</nav>
+
 <div class="row">
     <div class="col-lg-4 mb-4">
         <div class="card">
