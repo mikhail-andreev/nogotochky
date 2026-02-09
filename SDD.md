@@ -87,7 +87,8 @@ Dev-окружение должно подниматься одной коман
 - id
 - owner_user_id (FK -> User.id)  // мастер
 - service_id (FK -> Service.id)
-- slot_id (FK -> ScheduleSlot.id, unique)
+- slot_id (FK -> ScheduleSlot.id, unique)  // начальный слот
+- booked_slots (M2M -> ScheduleSlot)  // все забронированные слоты (для мульти-слот услуг)
 - client_name
 - client_phone
 - notes (nullable)
@@ -133,10 +134,13 @@ Bookings:
 - PATCH `/bookings/{id}` (например, отмена)
 
 ### Storefront (public)
-- GET `/masters/{slug}` — страница мастера (витрина)
-- GET `/masters/{slug}/services` — список услуг
-- GET `/masters/{slug}/slots?from=&to=` — доступные слоты
-- POST `/masters/{slug}/book` — создание записи (`service_id` + `slot_id` + контакты)
+
+- GET `/masters/` — каталог мастеров (мастера с доступными слотами + все мастера)
+- GET `/masters/{slug}/` — страница мастера (профиль + услуги)
+- GET `/masters/{slug}/slots/?service=N` — доступные слоты (ближайшие 2 недели, фильтрация по длительности услуги)
+- GET `/masters/{slug}/book/?service=N&slot=N` — форма записи
+- POST `/masters/{slug}/book/` — создание записи (`service_id` + `slot_id` + контакты)
+- GET `/masters/{slug}/book/success/?booking=N` — подтверждение записи
 
 ### Admin (role: ADMIN)
 Если используем Django Admin, то REST-эндпоинты ниже не обязательны.
@@ -167,6 +171,19 @@ Bookings:
 6. При гонке опираться на `unique(slot_id)` в `Booking` и корректно обработать `IntegrityError` (вернуть 409/ошибку занятости слота).
 
 Примечание про SQLite: конкурентная запись ограничена, но уникальный индекс + транзакция все равно обязательны.
+
+### Отмена записи
+
+При отмене записи (`Booking.cancel()`) все связанные слоты из `booked_slots` возвращаются в статус `AVAILABLE`.
+
+## Тестирование
+
+72 автотеста (`python manage.py test`), покрывающие:
+
+- **accounts**: User модель, роли, регистрация (с авто-логином), логин/логаут, сигнал создания MasterProfile.
+- **masters**: модели (slug-генерация, уникальность), MasterRequiredMixin (анонимы, ADMIN-роль), CRUD views (профиль, салон, услуги), изоляция данных между мастерами.
+- **schedule**: модели (ScheduleSlot, Booking), отмена одиночной и мульти-слот записи, SlotCreateForm (валидация, генерация), views (CRUD слотов, защита забронированных, отмена записи).
+- **showcase**: каталог мастеров (фильтрация по слотам), страница мастера (услуги, неактивные скрыты, 404), слоты (доступные, забронированные, фильтр по длительности услуги), `_filter_bookable_slots` (unit-тесты), бронирование (одинарное, мульти-слот, занятый слот, нехватка слотов), страница подтверждения.
 
 ## Аутентификация и авторизация
 - Master и Admin входят по email+паролю.
