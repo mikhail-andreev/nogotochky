@@ -79,8 +79,36 @@ class MasterSlotsView(TemplateView):
             # Default: next 14 days
             slots = slots.filter(start_at__date__lte=timezone.now().date() + timedelta(days=14))
 
-        context['slots'] = slots.order_by('start_at')
+        all_slots = list(slots.order_by('start_at'))
+
+        # Filter: only show slots where enough consecutive slots exist for the service
+        service = context.get('service')
+        if service and all_slots:
+            slot_duration = all_slots[0].duration_minutes if all_slots else 30
+            slots_needed = max(1, -(-service.duration_min // slot_duration))  # ceil division
+            context['slots'] = self._filter_bookable_slots(all_slots, slots_needed)
+        else:
+            context['slots'] = all_slots
+
         return context
+
+    @staticmethod
+    def _filter_bookable_slots(slots, slots_needed):
+        """Return only slots that have enough consecutive available slots after them."""
+        if slots_needed <= 1:
+            return slots
+
+        bookable = []
+        for i, slot in enumerate(slots):
+            consecutive = 1
+            for j in range(i + 1, min(i + slots_needed, len(slots))):
+                if slots[j].start_at == slots[j - 1].end_at:
+                    consecutive += 1
+                else:
+                    break
+            if consecutive >= slots_needed:
+                bookable.append(slot)
+        return bookable
 
 
 class BookingCreateView(FormView):
@@ -146,30 +174,64 @@ class BookingCreateView(FormView):
 
     @transaction.atomic
     def _create_booking(self, owner, service, slot_id, client_name, client_phone, notes):
-        """Create booking with transaction and slot locking."""
-        # Lock the slot for update
-        slot = ScheduleSlot.objects.select_for_update().get(pk=slot_id, owner=owner)
+        """Create booking with transaction. Locks multiple consecutive slots if needed."""
+        # Lock the starting slot
+        start_slot = ScheduleSlot.objects.select_for_update().get(pk=slot_id, owner=owner)
 
-        if slot.status != ScheduleSlot.Status.AVAILABLE:
+        if start_slot.status != ScheduleSlot.Status.AVAILABLE:
             raise ValueError('Слот уже занят')
 
-        # Verify service and slot belong to same owner
-        if service.owner_id != slot.owner_id:
+        if service.owner_id != start_slot.owner_id:
             raise ValueError('Услуга и слот принадлежат разным мастерам')
 
-        # Create booking
+        # Calculate how many slots are needed
+        slot_duration = start_slot.duration_minutes
+        slots_needed = max(1, -(-service.duration_min // slot_duration))  # ceil division
+
+        # Find and lock consecutive slots
+        slots_to_book = [start_slot]
+        if slots_needed > 1:
+            next_slots = list(
+                ScheduleSlot.objects.select_for_update()
+                .filter(
+                    owner=owner,
+                    status=ScheduleSlot.Status.AVAILABLE,
+                    start_at__gt=start_slot.start_at,
+                    start_at__lte=start_slot.start_at + timedelta(minutes=slot_duration * (slots_needed - 1))
+                )
+                .order_by('start_at')
+            )
+
+            # Verify slots are consecutive
+            current_end = start_slot.end_at
+            for ns in next_slots:
+                if ns.start_at == current_end:
+                    slots_to_book.append(ns)
+                    current_end = ns.end_at
+                else:
+                    break
+
+            if len(slots_to_book) < slots_needed:
+                raise ValueError(
+                    f'Недостаточно последовательных свободных слотов. '
+                    f'Нужно: {slots_needed}, доступно: {len(slots_to_book)}'
+                )
+
+        # Create booking linked to start slot
         booking = Booking.objects.create(
             owner=owner,
             service=service,
-            slot=slot,
+            slot=start_slot,
             client_name=client_name,
             client_phone=client_phone,
             notes=notes
         )
 
-        # Update slot status
-        slot.status = ScheduleSlot.Status.BOOKED
-        slot.save()
+        # Mark all slots as booked and link to booking
+        for s in slots_to_book:
+            s.status = ScheduleSlot.Status.BOOKED
+            s.save()
+        booking.booked_slots.set(slots_to_book)
 
         return booking
 

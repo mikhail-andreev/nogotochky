@@ -67,7 +67,13 @@ class Booking(models.Model):
         ScheduleSlot,
         on_delete=models.CASCADE,
         related_name='booking',
-        verbose_name='Слот'
+        verbose_name='Начальный слот'
+    )
+    booked_slots = models.ManyToManyField(
+        ScheduleSlot,
+        related_name='bookings_all',
+        verbose_name='Все забронированные слоты',
+        blank=True
     )
     client_name = models.CharField('Имя клиента', max_length=100)
     client_phone = models.CharField('Телефон клиента', max_length=20)
@@ -90,8 +96,7 @@ class Booking(models.Model):
         return f"{self.client_name} - {self.service.name} ({self.slot.start_at.strftime('%d.%m.%Y %H:%M')})"
 
     def cancel(self):
-        """Cancel booking and free the slot."""
+        """Cancel booking and free all booked slots."""
         self.status = self.Status.CANCELLED
-        self.slot.status = ScheduleSlot.Status.AVAILABLE
-        self.slot.save()
+        self.booked_slots.update(status=ScheduleSlot.Status.AVAILABLE)
         self.save()
