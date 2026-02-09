@@ -3,13 +3,14 @@
 {% block title %}Мои услуги{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h2>Мои услуги</h2>
     <a href="{% url 'service_create' %}" class="btn btn-primary">Добавить услугу</a>
 </div>
 
 {% if services %}
-<div class="table-responsive">
+<!-- Desktop table -->
+<div class="table-responsive d-none d-md-block">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -46,6 +47,35 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Mobile cards -->
+<div class="d-md-none">
+    {% for service in services %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="mb-0">{{ service.name }}</h6>
+                {% if service.is_active %}
+                <span class="badge bg-success">Активна</span>
+                {% else %}
+                <span class="badge bg-secondary">Неактивна</span>
+                {% endif %}
+            </div>
+            {% if service.description %}
+            <p class="text-muted small mb-2">{{ service.description|truncatewords:10 }}</p>
+            {% endif %}
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge bg-light">{{ service.duration_min }} мин</span>
+                <span class="badge bg-primary">{{ service.price }} руб.</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'service_edit' service.pk %}" class="btn btn-sm btn-outline-primary flex-fill">Редактировать</a>
+                <a href="{% url 'service_delete' service.pk %}" class="btn btn-sm btn-outline-danger flex-fill">Удалить</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% else %}
 <div class="alert alert-info">

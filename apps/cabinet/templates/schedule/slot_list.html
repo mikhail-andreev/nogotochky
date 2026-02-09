@@ -3,7 +3,7 @@
 {% block title %}Расписание{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
     <h2>Расписание</h2>
     <a href="{% url 'slot_create' %}" class="btn btn-primary">Добавить слоты</a>
 </div>
@@ -27,7 +27,8 @@
 </div>
 
 {% if slots %}
-<div class="table-responsive">
+<!-- Desktop table -->
+<div class="table-responsive d-none d-md-block">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -62,6 +63,33 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Mobile cards -->
+<div class="d-md-none">
+    {% for slot in slots %}
+    <div class="card mb-2">
+        <div class="card-body py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-medium">{{ slot.start_at|date:"d.m.Y" }}</div>
+                    <div class="text-muted small">{{ slot.start_at|time:"H:i" }} — {{ slot.end_at|time:"H:i" }}</div>
+                </div>
+                <div class="text-end">
+                    {% if slot.status == 'AVAILABLE' %}
+                    <span class="badge bg-success mb-1">Свободен</span><br>
+                    <a href="{% url 'slot_delete' slot.pk %}" class="btn btn-sm btn-outline-danger mt-1">Удалить</a>
+                    {% elif slot.status == 'BOOKED' %}
+                    <span class="badge bg-primary mb-1">Занят</span><br>
+                    <a href="{% url 'booking_detail' slot.booking.pk %}" class="btn btn-sm btn-outline-info mt-1">Запись</a>
+                    {% else %}
+                    <span class="badge bg-secondary">Заблок.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% else %}
 <div class="alert alert-info">

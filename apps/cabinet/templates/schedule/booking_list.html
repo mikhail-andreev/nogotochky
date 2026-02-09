@@ -24,7 +24,8 @@
 </div>
 
 {% if bookings %}
-<div class="table-responsive">
+<!-- Desktop table -->
+<div class="table-responsive d-none d-md-block">
     <table class="table table-hover">
         <thead>
             <tr>
@@ -58,6 +59,31 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Mobile cards -->
+<div class="d-md-none">
+    {% for booking in bookings %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <div class="fw-medium">{{ booking.client_name }}</div>
+                    <div class="text-muted small">{{ booking.client_phone }}</div>
+                </div>
+                {% if booking.status == 'CREATED' %}
+                <span class="badge bg-success">Активна</span>
+                {% else %}
+                <span class="badge bg-secondary">Отменена</span>
+                {% endif %}
+            </div>
+            <div class="text-muted small mb-2">
+                {{ booking.slot.start_at|date:"d.m.Y H:i" }} &middot; {{ booking.service.name }}
+            </div>
+            <a href="{% url 'booking_detail' booking.pk %}" class="btn btn-sm btn-outline-info w-100">Подробнее</a>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% else %}
 <div class="alert alert-info">
